@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import magic
 
 #Checks if file is actually .wav

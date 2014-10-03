@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 #-------------------------------------------------------------------------------
 # Name:        module1
 # Purpose:
@@ -9,11 +9,9 @@
 # Copyright:   (c) marcs 2014
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
-#!/usr/bin/env python 
 
 
-
-import os, sys
+import os,  sys
 
 def validate_command():
     """Validates the commands.
