@@ -9,6 +9,6 @@ def check_type(file):
 
 #Tests
 print check_type("audio/Sor3508.mp3")
-print check_type("C:\Users\Kyle\Dropbox\Documents\Git\Sor3508.wav")
+print check_type("audio/Sor3508actuallymp3.wav")
 print check_type("audio/z01.wav")
 

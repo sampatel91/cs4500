@@ -9,7 +9,7 @@
 # Copyright:   (c) marcs 2014
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
-#!/usr/bin/python -B
+#!/usr/bin/env python 
 
 
 
