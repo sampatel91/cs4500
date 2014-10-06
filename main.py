@@ -35,7 +35,7 @@ def validate_command():
                   'Error {0} -d <path> -d <path>\n']
 
     if not valid_args:
-        sys.stderr.write('Error: one of \n')
+        sys.stderr.write('Error: one of %s \n'% error_list )
         sys.stderr.writelines([str.format(sys.argv[0]) for e in error_list])
         return False
     return True
