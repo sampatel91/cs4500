@@ -1,14 +1,24 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import sys
-import utilities
+import utilities as util
 import os
 
 def processFiles(file1, file2):
-    fileName1 = utilities.getFileName(file1)
-    fileName2 = utilities.getFileName(file2)
+    fileName1 = util.getFileName(file1)
+    fileName2 = util.getFileName(file2)
+    if (util.is_wave_file(fileName1) and util.is_wave_file(fileName2) and
+    util.get_length(fileName1) == util.get_length(fileName2)):
+        match_found = util.compare(fileName2, fileName2)
+        if match_found:
+            print("MATCH %s %s", file1, file2)
+        else:
+            print("NO MATCH FOUND")
+    else:
+        print("NO MATCH FOUND")
+
 
 def main(argv):
-    utilities.checkArgs(argv)
+    util.checkArgs(argv)
     if argv[1] == '-f' and argv[3] == '-f':
         processFiles(argv[1], argv[3])
     elif argv[1] == '-f' and argv[3] == '-d':
