@@ -5,7 +5,7 @@ from array import array
 
 def checkArgs(args):
     if len(args) != 5:
-        sys.stderr.write('ERROR: Proper command line usage is one of:\n')
+        sys.stderr.write('ERROR: incorrect command line\n\n')
         sys.stderr.write(' ./dan -f <pathname> -f <pathname>\n')
         sys.stderr.write(' ./dan -f <pathname> -d <pathname>\n')
         sys.stderr.write(' ./dan -d <pathname> -f <pathname>\n')
@@ -14,7 +14,7 @@ def checkArgs(args):
     else:
         if not ((args[1] == '-f' or args[1] == '-d') and
                     (args[3] == '-f' or args[3] == '-d')):
-            sys.stderr.write('ERROR: Proper command line usage is one of:\n')
+            sys.stderr.write('ERROR: incorrect command line\n\n')
             sys.stderr.write(' ./dan -f <pathname> -f <pathname>\n')
             sys.stderr.write(' ./dan -f <pathname> -d <pathname>\n')
             sys.stderr.write(' ./dan -d <pathname> -f <pathname>\n')
@@ -36,7 +36,8 @@ def is_wave_file(filename):
     if mime.file(filename) == ('audio/x-wav'):
         return True
     else:
-        return False
+        sys.stderr.write('ERROR: %s is not a supported format\n' % (filename))
+        sys.exit(-1)
 
 
 def get_length(file):
