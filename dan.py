@@ -4,6 +4,19 @@ import utilities as util
 import os
 
 def processFiles(file1, file2):
+    """
+    Arguments: filepath x filepath 
+    
+    Identifies and returns matches between two different files.
+    
+    This method prints:
+        'MATCH ' followed by the resource files of the given file paths 
+        if the resource files warrant a match.
+        
+        OR
+        
+        'NO MATCH' if the resource files of the given file paths do not match.
+    """
     fileName1 = util.getFileName(file1)
     fileName2 = util.getFileName(file2)
     if (util.is_wave_file(file1) and util.is_wave_file(file2) and
@@ -18,7 +31,10 @@ def processFiles(file1, file2):
 
 
 def main(argv):
+    # Check if user input is in the correct syntax
     util.checkArgs(argv)
+    
+    # Conditions to process and identify matching files.
     if argv[1] == '-f' and argv[3] == '-f':
         processFiles(argv[2], argv[4])
     elif argv[1] == '-f' and argv[3] == '-d':
