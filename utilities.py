@@ -4,6 +4,13 @@ import magic
 from array import array
 
 def checkArgs(args):
+    """
+    Arguments: Array of command line arguments
+    
+    Validates the command line arguments.
+    
+    Returns an error message to STDERR if the command line arguments are invalid and exits the application.
+    """
     if len(args) != 5:
         sys.stderr.write('ERROR: incorrect command line\n\n')
         sys.stderr.write(' ./dan -f <pathname> -f <pathname>\n')
@@ -23,6 +30,11 @@ def checkArgs(args):
 
 
 def getFileName(file):
+    """
+    Arguments: filepath
+    
+    Returns the resource file name found at the end of the given file path
+    """
     fileName = file.split('/')
     if len(fileName) == 0:
         return fileName
@@ -31,6 +43,11 @@ def getFileName(file):
 
 
 def is_wave_file(filename):
+    """
+    Arguments: filename
+    
+    Returns TRUE if the given file name IS a wave file. Otherwise returns FALSE.
+    """
     mime = magic.open(magic.MIME_TYPE)
     mime.load()
     if mime.file(filename) == ('audio/x-wav'):
