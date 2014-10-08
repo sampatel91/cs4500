@@ -5,7 +5,7 @@ TEAM MEMBERS:
 
 Luis Enrique Lopez Archetti lopez-archetti.l@husky.neu.edu
 Saumil Patel patel.sau@husky.neu.edu
-Marc Savino <CCIS EMAIL>
+Marc Savino marcs@ccs.neu.edu
 Kyle Vinagro <CCIS EMAIL>
 -------------------------------------------------------------------------------------------
 To Compile:
