@@ -42,11 +42,13 @@ def getFileName(file):
         return fileName[len(fileName) - 1]
 
 
-def is_wave_file(filename):
+def is_wave_file(file):
     """
-    Arguments: filename
+    Arguments: file
     
-    Returns TRUE if the given file name IS a wave file. Otherwise returns FALSE.
+    Checks if a file is in WAVE format.
+    
+    Returns TRUE if the given file IS a wave file. Otherwise returns FALSE.
     """
     mime = magic.open(magic.MIME_TYPE)
     mime.load()
@@ -58,6 +60,11 @@ def is_wave_file(filename):
 
 
 def get_length(file):
+    """
+    Arguments: file 
+    
+    Returns the length of a WAVE file. 
+    """
     file = wave.open(file, 'r')
     frames = file.getnframes()
     frate = file.getframerate()
@@ -66,6 +73,11 @@ def get_length(file):
 
 
 def read_file(file):
+    """ 
+    Arguments: file
+    
+    Returns the raw data within the given WAVE file.
+    """
     file = wave.open(file, 'r')
     frames = file.getnframes()
     data = file.readframes(frames)
@@ -78,6 +90,11 @@ def get_channel(file):
 
 
 def string_to_array(string, channel):
+    """
+    Arguments: string x channel
+    
+    Returns an array of WAVE file channels.
+    """
     raw_data = array('h', string)
     if channel == 2:
         left = raw_data[0::2]
@@ -89,6 +106,13 @@ def string_to_array(string, channel):
     return data
 
 def compare(file1, file2):
+    """
+    Arguments: file x file
+    
+    Compares two WAVE files. 
+    
+    Returns TRUE if the two files MATCH. Otherwise returns FALSE.
+    """
     data1 = read_file(file1)
     array1 = string_to_array(data1, get_channel(file1))
     data2 = read_file(file2)
