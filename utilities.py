@@ -42,7 +42,7 @@ def getFileName(file):
         return fileName[len(fileName) - 1]
 
 
-def is_wave_file(file):
+def is_wave_file(filename):
     """
     Arguments: file
     
@@ -55,7 +55,7 @@ def is_wave_file(file):
     if mime.file(filename) == ('audio/x-wav'):
         return True
     else:
-        sys.stderr.write('ERROR: %s is not a supported format\n' % (filename))
+        sys.stderr.write('ERROR: %s is not a supported format\n' % (file))
         sys.exit(-1)
 
 
