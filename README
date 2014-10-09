@@ -19,11 +19,6 @@ TO COMPILE & EXECUTE:
     $ ./dan -d <path> -f <path>
     $ ./dan -d <path> -d <path>
     
-3. In case of permissions issues, make sure the file dan has executable permissions by
-   running the following command and then trying step 2 again:
-
-    $ chmod a+x dan
-
     <path> is a linux path name for a file or directory within the CCIS 
     shared network.
 
