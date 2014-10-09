@@ -6,7 +6,7 @@ TEAM MEMBERS:
 Luis Enrique Lopez Archetti lopez-archetti.l@husky.neu.edu
 Saumil Patel patel.sau@husky.neu.edu
 Marc Savino marcs@ccs.neu.edu
-Kyle Vinagro kvinagro15@gmail.com
+Kyle Vinagro vinagro.k@husky.neu.edu
 -------------------------------------------------------------------------------------------
 To Compile:
 
