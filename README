@@ -10,8 +10,8 @@ Kyle Vinagro vinagro.k@husky.neu.edu
 -------------------------------------------------------------------------------------------
 TO COMPILE & EXECUTE:
 
-1.  CD into the root directory of our project( /cs4500_a4)that holds this application's 
-    executable file.
+1.  CD into the root directory of our project(cs4500_a4/) that holds this application's 
+    executable file(dan).
    
 2. Make sure the file dan has executable permissions by running:
 
