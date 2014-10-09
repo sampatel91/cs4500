@@ -1,5 +1,5 @@
 
-CS4500 Fall 2014
+CS4500 Fall 2014 Assignment 4
 -------------------------------------------------------------------------------------------
 TEAM MEMBERS:
 
@@ -8,15 +8,14 @@ Saumil Patel patel.sau@husky.neu.edu
 Marc Savino marcs@ccs.neu.edu
 Kyle Vinagro vinagro.k@husky.neu.edu
 -------------------------------------------------------------------------------------------
+TO COMPILE & EXECUTE:
 
-To Compile & Execute
-
-1. Change into the directory that holds this application's 
-   executable file.
+1.  CD into the root directory of our project( /cs4500_a4)that holds this application's 
+    executable file.
    
 2. Make sure the file dan has executable permissions by running:
 
-$ chmod a+x dan
+    $ chmod a+x dan
 
 3. Execute one of the following commands:
 
