@@ -3,32 +3,32 @@ Dan Testing
 
 >>> import dan
 
->>> dan.processFiles('audio/z01.wav', 'audio/z01.wav')
+>>> dan.process_files('audio/z01.wav', 'audio/z01.wav')
 MATCH z01.wav z01.wav
 
->>> dan.processFiles('audio/z01.wav', 'audio/z02.wav')
+>>> dan.process_files('audio/z01.wav', 'audio/z02.wav')
 MATCH z01.wav z02.wav
 
->>> dan.processFiles('audio/z02.wav', 'audio/z03.wav')
+>>> dan.process_files('audio/z02.wav', 'audio/z03.wav')
 NO MATCH
 
->>> dan.processFiles('audio/z03.wav', 'audio/z04.wav')
+>>> dan.process_files('audio/z03.wav', 'audio/z04.wav')
 MATCH z03.wav z04.wav
 
->>> dan.processFiles('audio/z04.wav', 'audio/z05.wav')
+>>> dan.process_files('audio/z04.wav', 'audio/z05.wav')
 NO MATCH
 
->>> dan.processFiles('audio/z05.wav', 'audio/z06.wav')
+>>> dan.process_files('audio/z05.wav', 'audio/z06.wav')
 MATCH z05.wav z06.wav
 
->>> dan.processFiles('audio/z06.wav', 'audio/z07.wav')
+>>> dan.process_files('audio/z06.wav', 'audio/z07.wav')
 NO MATCH
 
->>> dan.processFiles('audio/z07.wav', 'audio/z08.wav')
+>>> dan.process_files('audio/z07.wav', 'audio/z08.wav')
 MATCH z07.wav z08.wav
 
->>> dan.processFiles('audio/z05.wav', 'audio/Sor3508.wav')
+>>> dan.process_files('audio/z05.wav', 'audio/Sor3508.wav')
 NO MATCH
 
->>> dan.processFiles('audio/z01.wav', 'audio/Sor3508.mp3')
+>>> dan.process_files('audio/z01.wav', 'audio/Sor3508.mp3')
 ERROR: Sor3508.mp3 is not a supported format
