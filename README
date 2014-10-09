@@ -12,17 +12,18 @@ TO COMPILE & EXECUTE:
 
 1.  CD into the root directory of our project(cs4500_a4/) that holds this application's 
     executable file(dan).
-   
-2. Make sure the file dan has executable permissions by running:
 
-    $ chmod a+x dan
-
-3. Execute one of the following commands:
+2. Execute one of the following commands:
 
     $ ./dan -f <path> -f <path>
     $ ./dan -f <path> -d <path>
     $ ./dan -d <path> -f <path>
     $ ./dan -d <path> -d <path>
+    
+3. In case of permissions issues, make sure the file dan has executable permissions by
+   running the following command and then trying step 2 again:
+
+    $ chmod a+x dan
 
 <path> is a linux path name for a file or directory within the CCIS shared network.
 
