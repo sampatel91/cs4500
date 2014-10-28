@@ -33,8 +33,11 @@ def get_file_name(filepath):
     else:
         return file_name[len(file_name) - 1]
 
+def get_file_path(file, dir):
+    file_path = dir + '/' + file
+    return file_path
 
-def is_wave_file(filepath):
+def is_valid_format(filepath):
     """
     Arguments: filepath
     
@@ -44,8 +47,11 @@ def is_wave_file(filepath):
     """
     mime = magic.open(magic.MIME_TYPE)
     mime.load()
+    print (mime.file(filepath))
     if mime.file(filepath) == ('audio/x-wav'):
         return True
+    elif (mime.file(filepath) == ('audio/mpeg')):
+	return True
     else:
         sys.stderr.write('ERROR: %s is not a supported format\n' % (filepath))
         sys.exit(1)
@@ -116,8 +122,10 @@ def compare(filepath1, filepath2):
     array2 = string_to_array(data2, get_channel(filepath2))
     i = 0
     while i < len(array1):
-        distance_var = array2[i] / array1[i]
-        if not (distance_var >= 0.97 and distance_var <= 1.03):
-	    return False
-        i += 1
+	if (array1[i] > 0):
+           distance_var = array2[i] / array1[i]
+           if not (distance_var >= 0.97 and distance_var <= 1.03):
+	      return False
+           i += 1
+        return True
     return True
