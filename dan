@@ -3,6 +3,12 @@ import sys
 import utilities as util
 import os
 
+match_found = False
+
+def match_found():
+    if not(match_found):
+	print "NO MATCh"
+
 def process_files(file_path1, file_path2):
     """
     Arguments: filepath x filepath 
@@ -19,15 +25,12 @@ def process_files(file_path1, file_path2):
     """
     file_name1 = util.get_file_name(file_path1)
     file_name2 = util.get_file_name(file_path2)
-    print (file_path1)
-    print (file_path2)
-    if (util.is_valid_format(file_path1) and util.is_valid_format(file_path2) and
+    if (util.is_supported_file(file_path1) and util.is_supported_file(file_path2) and
     util.get_length(file_path1) == util.get_length(file_path2)):
-        match_found = util.compare(file_path1, file_path2)
-        if match_found:
+        files_matched = util.compare(file_path1, file_path2)
+        if files_matched:
+            match_found = True
             print "MATCH %s %s" %  (file_name1, file_name2)
-    else:
-        print("NO MATCH")
 
 
 def main(argv):
@@ -37,16 +40,19 @@ def main(argv):
     # Conditions to process and identify matching files.
     if argv[1] == '-f' and argv[3] == '-f':
         process_files(argv[2], argv[4])
+	match_found()
     elif argv[1] == '-f' and argv[3] == '-d':
         files = os.listdir(argv[4])
         for file in files:
 	    file_path = util.get_file_path(file, argv[4])
             process_files(argv[2], file_path)
+	    match_found()
     elif argv[1] == '-d' and argv[3] == '-f':
         files = os.listdir(argv[2])
         for file in files:
 	    file_path = util.get_file_path(file, argv[2])
             process_files(file_path, argv[4])
+	    match_found()
     elif argv[1] == '-d' and argv[3] == '-d':
         files1 = os.listdir(argv[2])
         files2 = os.listdir(argv[4])
@@ -55,6 +61,7 @@ def main(argv):
                 file_path1 = util.get_file_path(file1, argv[2])
 		file_path2 = util.get_file_path(file2, argv[4])
                 process_files(file_path1, file_path2)
+		match_found()
 
 if __name__ == "__main__":
     main(sys.argv)

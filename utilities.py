@@ -2,6 +2,9 @@ import sys
 import wave
 import magic
 from array import array
+import tempfile
+import os
+import subprocess
 
 def check_args(args):
     """
@@ -37,7 +40,7 @@ def get_file_path(file, dir):
     file_path = dir + '/' + file
     return file_path
 
-def is_valid_format(filepath):
+def is_supported_file(filepath):
     """
     Arguments: filepath
     
@@ -47,15 +50,17 @@ def is_valid_format(filepath):
     """
     mime = magic.open(magic.MIME_TYPE)
     mime.load()
-    print (mime.file(filepath))
-    if mime.file(filepath) == ('audio/x-wav'):
+    if mime.file(filepath) == ('audio/x-wav') or mime.file(filepath) == ('audio/mpeg'):
         return True
-    elif (mime.file(filepath) == ('audio/mpeg')):
-	return True
     else:
         sys.stderr.write('ERROR: %s is not a supported format\n' % (filepath))
         sys.exit(1)
-
+ 
+def mp3_to_wav(filepath):
+    wav = get_file_name(filepath.split('.')[0]) + '.wav'
+    cmd = '/course/cs4500f14/bin/lame --decode %s tmp/%s' % (filepath, wav)
+    subprocess.call(cmd, shell=True)
+     
 
 def get_length(filepath):
     """
