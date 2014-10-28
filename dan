@@ -19,7 +19,7 @@ def process_files(file1, file2):
     """
     file_name1 = util.get_file_name(file1)
     file_name2 = util.get_file_name(file2)
-    if (util.is_wave_file(file1) and util.is_wave_file(file2) and
+    if (util.is_supported_file(file1) and util.is_supported_file(file2) and
     util.get_length(file1) == util.get_length(file2)):
         match_found = util.compare(file1, file2)
         if match_found:
