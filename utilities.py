@@ -6,6 +6,8 @@ import tempfile
 import os
 import subprocess
 
+global f
+
 def check_args(args):
     """
     Arguments: Array of command line arguments
@@ -57,10 +59,11 @@ def is_supported_file(filepath):
         sys.exit(1)
  
 def mp3_to_wav(filepath):
-    wav = get_file_name(filepath.split('.')[0]) + '.wav'
-    cmd = '/course/cs4500f14/bin/lame --decode %s tmp/%s' % (filepath, wav)
+    f = tempfile.mkstemp(suffix='.wav')
+    print f[1]
+    cmd = '/course/cs4500f14/bin/lame --decode %s %s' % (filepath, f[1])
     subprocess.call(cmd, shell=True)
-     
+    return f[1]
 
 def get_length(filepath):
     """
