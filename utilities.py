@@ -6,8 +6,6 @@ import tempfile
 import os
 import subprocess
 
-global f
-
 def check_args(args):
     """
     Arguments: Array of command line arguments
@@ -50,6 +48,7 @@ def is_supported_file(filepath):
     
     Returns TRUE if the given file IS a wave file. Otherwise returns FALSE.
     """
+    """
     mime = magic.open(magic.MIME_TYPE)
     mime.load()
     if mime.file(filepath) == ('audio/x-wav') or mime.file(filepath) == ('audio/mpeg'):
@@ -57,11 +56,21 @@ def is_supported_file(filepath):
     else:
         sys.stderr.write('ERROR: %s is not a supported format\n' % (filepath))
         sys.exit(1)
- 
+    """
+    header = subprocess.check_output(['file', '-b', filepath])
+    if 'MPEG ADTS, layer III' or 'WAVE audio' in header:
+	return True
+    return False
+
+def is_mp3(filepath):
+    header = subprocess.check_output(['file', '-b', filepath])
+    if 'MPEG ADTS, layer III' in header:
+	return True
+    return False
+
 def mp3_to_wav(filepath):
     f = tempfile.mkstemp(suffix='.wav')
-    print f[1]
-    cmd = '/course/cs4500f14/bin/lame --decode %s %s' % (filepath, f[1])
+    cmd = '/course/cs4500f14/bin/lame --decode --silent %s %s' % (filepath, f[1])
     subprocess.call(cmd, shell=True)
     return f[1]
 
@@ -116,6 +125,12 @@ def string_to_array(string, channel):
         data = raw_data
     return data
 
+def del_temp_files(filepath1, filepath2):
+    if 'tmp' in filepath1:
+	os.remove(filepath1)
+    if 'tmp' in filepath2:
+        os.remove(filepath2)
+
 def compare(filepath1, filepath2):
     """
     Arguments: filepath x filepath
@@ -124,16 +139,24 @@ def compare(filepath1, filepath2):
     
     Returns TRUE if the two files MATCH. Otherwise returns FALSE.
     """
-    data1 = read_file(filepath1)
-    array1 = string_to_array(data1, get_channel(filepath1))
-    data2 = read_file(filepath2)
-    array2 = string_to_array(data2, get_channel(filepath2))
-    i = 0
-    while i < len(array1):
-	if (array1[i] > 0):
-           distance_var = array2[i] / array1[i]
-           if not (distance_var >= 0.97 and distance_var <= 1.03):
-	      return False
-           i += 1
+    if is_mp3(filepath1):
+	filepath1 = mp3_to_wav(filepath1)
+    if is_mp3(filepath1):
+	filepath2 = mp3_to_wav(filepath2)
+    if get_length(filepath1) == get_length(filepath2):
+        data1 = read_file(filepath1)
+        array1 = string_to_array(data1, get_channel(filepath1))
+        data2 = read_file(filepath2)
+        array2 = string_to_array(data2, get_channel(filepath2))
+        i = 0        
+        while (i < len(array1)) and (i < len(array2)):
+	    if not (array1[i] == 0):
+                distance_var = array2[i] / array1[i]
+                if not (distance_var >= 0.99 and distance_var <= 1.01):
+	            return False
+            i += 1
+        del_temp_files(filepath1, filepath2)
         return True
-    return True
+    else:
+        del_temp_files(filepath1, filepath2)
+        return False
