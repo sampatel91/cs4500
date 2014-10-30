@@ -5,6 +5,7 @@ from array import array
 import tempfile
 import os
 import subprocess
+import glob
 
 def check_args(args):
     """
@@ -126,12 +127,20 @@ def string_to_array(string, channel):
     else:
         data = raw_data
     return data
-
+"""
 def del_temp_files(filepath1, filepath2):
     if 'tmp' in filepath1:
 	os.remove(filepath1)
     if 'tmp' in filepath2:
         os.remove(filepath2)
+"""
+
+def del_temp_files():
+    os.chdir('/tmp')
+    files = glob.glob('*.wav')
+    for filename in files:
+        os.remove(filename)
+    
 
 def compare(filepath1, filepath2):
     """
@@ -157,8 +166,8 @@ def compare(filepath1, filepath2):
                 if not (distance_var >= 0.99 and distance_var <= 1.01):
 	            return False
             i += 1
-        del_temp_files(filepath1, filepath2)
+#        del_temp_files(filepath1, filepath2)
         return True
     else:
-        del_temp_files(filepath1, filepath2)
+#       del_temp_files(filepath1, filepath2)
         return False
