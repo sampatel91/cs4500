@@ -1,6 +1,9 @@
 import sys
 import wave
 import magic
+import numpy
+import math
+import struct
 from array import array
 import tempfile
 import os
@@ -58,7 +61,7 @@ def is_supported_file(filepath):
         sys.exit(1)
     """
     header = subprocess.check_output(['file', '-b', filepath])
-    if 'MPEG ADTS, layer III' or 'WAVE audio' in header:
+    if 'MPEG ADTS, layer III' or 'WAVE' in header:
 	return True
     return False
 
@@ -66,6 +69,9 @@ def is_mp3(filepath):
     header = subprocess.check_output(['file', '-b', filepath])
     if 'MPEG ADTS, layer III' in header:
 	return True
+    elif 'ID3' in header:
+      audio = MP3(path)
+      return 'audio/mp3' in audio.mime
     return False
 
 def mp3_to_wav(filepath):
@@ -116,13 +122,21 @@ def string_to_array(string, channel):
     Returns an array of WAVE file channels.
     """
     raw_data = array('h', string)
+    #data = struct.unpack('{n}h'.format(n=len(string)/2), string)
+    data = []    
     if channel == 2:
         left = raw_data[0::2]
         right = raw_data[1::2]
+        #print left
+        #print right
         for i in range(0, len(left)):
-            data = [(left[i] + right[i]) / 2]
+             data.append((left[i] + right[i]) / 2)
+             #print data[i]
+#        data = [(left[i] + right[i]) / 2 for i in range(0, len(left))]
     else:
         data = raw_data
+#    return abs(numpy.fft.rfft(data))
+    #print data
     return data
 
 def del_temp_files(filepath1, filepath2):
@@ -141,19 +155,48 @@ def compare(filepath1, filepath2):
     """
     if is_mp3(filepath1):
 	filepath1 = mp3_to_wav(filepath1)
+        #mp3_wave = subprocess.check_output('file', '-b', filepath1)
+        #print mp3_wav
     if is_mp3(filepath1):
 	filepath2 = mp3_to_wav(filepath2)
+        #mp3_wave2 = subprocess.check_output('file', '-b', filepath2)
+        #print mp3_wav2
+    #print filepath1
+    #print filepath2
     if get_length(filepath1) == get_length(filepath2):
         data1 = read_file(filepath1)
         array1 = string_to_array(data1, get_channel(filepath1))
         data2 = read_file(filepath2)
         array2 = string_to_array(data2, get_channel(filepath2))
-        i = 0        
+        #diff = numpy.corrcoef(array1, array2)
+        #print diff
+	"""if diff[0][1] > 0.9:
+	    return True
+	else:
+	    return False
+        diff = numpy.allclose(array1, array2)
+        if diff:
+            return True
+        else:
+            return False
+        """
+        #print array1
+        #print array2
+        i = 0
+        threshold = len(array1) * .3        
+        #print (len(array1))
+        #print (len(array2))
         while (i < len(array1)) and (i < len(array2)):
 	    if not (array1[i] == 0):
-                distance_var = array2[i] / array1[i]
-                if not (distance_var >= 0.99 and distance_var <= 1.01):
-	            return False
+               # print array1[i]
+               # print array2[i]
+               # print threshold
+                distance_var = (float(array2[i]) / float(array1[i]))
+               # print distance_var
+                if not (distance_var >= 0.8 and distance_var <= 1.5):
+                    if (threshold == 0):
+                        return False
+	            threshold -= 1
             i += 1
         del_temp_files(filepath1, filepath2)
         return True
