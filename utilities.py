@@ -45,26 +45,27 @@ def is_supported_file(filepath):
     """
     Arguments: filepath
     
-    Checks if a file is in WAVE format.
+    Checks if a file is in WAVE or MPEG format.
     
-    Returns TRUE if the given file IS a wave file. Otherwise returns FALSE.
-    """
-    """
-    mime = magic.open(magic.MIME_TYPE)
-    mime.load()
-    if mime.file(filepath) == ('audio/x-wav') or mime.file(filepath) == ('audio/mpeg'):
-        return True
-    else:
-        sys.stderr.write('ERROR: %s is not a supported format\n' % (filepath))
-        sys.exit(1)
+    Returns TRUE if the given file IS a wave or mpeg file. Otherwise returns FALSE.
     """
     real_path = os.path.realpath(filepath)
     header = subprocess.check_output(['file', '-b',real_path])
     if 'MPEG ADTS, layer III' or 'WAVE audio' in header:
 	return True
+    else:
+        sys.stderr.write('ERROR: %s is not a supported format\n' % (filepath))
+        sys.exit(1)
     return False
 
 def is_mp3(filepath):
+    """
+    Arguements: filepath
+ 
+    Checks if a file is in MPEG format
+
+    Returns TRUE if given file is MPEG. Otherwise returns false
+    """
     real_path = os.path.realpath(filepath)
     header = subprocess.check_output(['file', '-b', real_path])
     if 'MPEG ADTS, layer III' in header:
@@ -72,6 +73,13 @@ def is_mp3(filepath):
     return False
 
 def mp3_to_wav(filepath):
+    """
+    Arguements: filepath
+
+    Converts mp3 to wav
+
+    Returns the filepath of the converted file
+    """
     f = tempfile.mkstemp(suffix='.wav')
     cmd = '/course/cs4500f14/bin/lame --decode --silent %s %s' % (filepath, f[1])
     subprocess.call(cmd, shell=True)
@@ -127,21 +135,18 @@ def string_to_array(string, channel):
     else:
         data = raw_data
     return data
-"""
-def del_temp_files(filepath1, filepath2):
-    if 'tmp' in filepath1:
-	os.remove(filepath1)
-    if 'tmp' in filepath2:
-        os.remove(filepath2)
-"""
 
 def del_temp_files():
+    """
+     Arguements: None
+
+    Deletes all temp files created by program
+    """
     os.chdir('/tmp')
     files = glob.glob('*.wav')
     for filename in files:
         os.remove(filename)
     
-
 def compare(filepath1, filepath2):
     """
     Arguments: filepath x filepath
@@ -166,8 +171,6 @@ def compare(filepath1, filepath2):
                 if not (distance_var >= 0.99 and distance_var <= 1.01):
 	            return False
             i += 1
-#        del_temp_files(filepath1, filepath2)
         return True
     else:
-#       del_temp_files(filepath1, filepath2)
         return False
