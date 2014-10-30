@@ -57,13 +57,15 @@ def is_supported_file(filepath):
         sys.stderr.write('ERROR: %s is not a supported format\n' % (filepath))
         sys.exit(1)
     """
-    header = subprocess.check_output(['file', '-b', filepath])
+    real_path = os.path.realpath(filepath)
+    header = subprocess.check_output(['file', '-b',real_path])
     if 'MPEG ADTS, layer III' or 'WAVE audio' in header:
 	return True
     return False
 
 def is_mp3(filepath):
-    header = subprocess.check_output(['file', '-b', filepath])
+    real_path = os.path.realpath(filepath)
+    header = subprocess.check_output(['file', '-b', real_path])
     if 'MPEG ADTS, layer III' in header:
 	return True
     return False
