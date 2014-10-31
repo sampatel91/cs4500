@@ -1,13 +1,13 @@
 import sys
 import wave
+import sys
+import wave
 import magic
-import numpy
-import math
-import struct
 from array import array
 import tempfile
 import os
 import subprocess
+import glob
 
 def check_args(args):
     """
@@ -47,34 +47,44 @@ def is_supported_file(filepath):
     """
     Arguments: filepath
     
-    Checks if a file is in WAVE format.
+    Checks if a file is in WAVE or MPEG format.
     
-    Returns TRUE if the given file IS a wave file. Otherwise returns FALSE.
+    Returns TRUE if the given file IS a wave or mpeg file. Otherwise returns FALSE.
     """
-    """
-    mime = magic.open(magic.MIME_TYPE)
-    mime.load()
-    if mime.file(filepath) == ('audio/x-wav') or mime.file(filepath) == ('audio/mpeg'):
+    real_path = os.path.realpath(filepath)
+    header = subprocess.check_output(['file', '-b',real_path])
+    if 'MPEG ADTS, layer III' or 'WAVE audio' in header:
         return True
     else:
         sys.stderr.write('ERROR: %s is not a supported format\n' % (filepath))
         sys.exit(1)
-    """
-    header = subprocess.check_output(['file', '-b', filepath])
-    if 'MPEG ADTS, layer III' or 'WAVE' in header:
-	return True
     return False
 
 def is_mp3(filepath):
-    header = subprocess.check_output(['file', '-b', filepath])
+    """
+    Arguements: filepath
+ 
+    Checks if a file is in MPEG format
+
+    Returns TRUE if given file is MPEG. Otherwise returns false
+    """
+    real_path = os.path.realpath(filepath)
+    header = subprocess.check_output(['file', '-b', real_path])
     if 'MPEG ADTS, layer III' in header:
-	return True
+        return True
     elif 'ID3' in header:
       audio = MP3(path)
       return 'audio/mp3' in audio.mime
     return False
 
 def mp3_to_wav(filepath):
+    """
+    Arguements: filepath
+
+    Converts mp3 to wav
+
+    Returns the filepath of the converted file
+    """
     f = tempfile.mkstemp(suffix='.wav')
     cmd = '/course/cs4500f14/bin/lame --decode --silent %s %s' % (filepath, f[1])
     subprocess.call(cmd, shell=True)
@@ -122,29 +132,27 @@ def string_to_array(string, channel):
     Returns an array of WAVE file channels.
     """
     raw_data = array('h', string)
-    #data = struct.unpack('{n}h'.format(n=len(string)/2), string)
     data = []    
     if channel == 2:
         left = raw_data[0::2]
         right = raw_data[1::2]
-        #print left
-        #print right
         for i in range(0, len(left)):
              data.append((left[i] + right[i]) / 2)
-             #print data[i]
-#        data = [(left[i] + right[i]) / 2 for i in range(0, len(left))]
     else:
         data = raw_data
-#    return abs(numpy.fft.rfft(data))
-    #print data
     return data
 
-def del_temp_files(filepath1, filepath2):
-    if 'tmp' in filepath1:
-	os.remove(filepath1)
-    if 'tmp' in filepath2:
-        os.remove(filepath2)
+def del_temp_files():
+    """
+     Arguements: None
 
+    Deletes all temp files created by program
+    """
+    os.chdir('/tmp')
+    files = glob.glob('*.wav')
+    for filename in files:
+        os.remove(filename)
+    
 def compare(filepath1, filepath2):
     """
     Arguments: filepath x filepath
@@ -154,52 +162,24 @@ def compare(filepath1, filepath2):
     Returns TRUE if the two files MATCH. Otherwise returns FALSE.
     """
     if is_mp3(filepath1):
-	filepath1 = mp3_to_wav(filepath1)
-        #mp3_wave = subprocess.check_output('file', '-b', filepath1)
-        #print mp3_wav
-    if is_mp3(filepath1):
-	filepath2 = mp3_to_wav(filepath2)
-        #mp3_wave2 = subprocess.check_output('file', '-b', filepath2)
-        #print mp3_wav2
-    #print filepath1
-    #print filepath2
+        filepath1 = mp3_to_wav(filepath1)
+    if is_mp3(filepath2):
+        filepath2 = mp3_to_wav(filepath2)
     if get_length(filepath1) == get_length(filepath2):
         data1 = read_file(filepath1)
         array1 = string_to_array(data1, get_channel(filepath1))
         data2 = read_file(filepath2)
         array2 = string_to_array(data2, get_channel(filepath2))
-        #diff = numpy.corrcoef(array1, array2)
-        #print diff
-	"""if diff[0][1] > 0.9:
-	    return True
-	else:
-	    return False
-        diff = numpy.allclose(array1, array2)
-        if diff:
-            return True
-        else:
-            return False
-        """
-        #print array1
-        #print array2
         i = 0
         threshold = len(array1) * .3        
-        #print (len(array1))
-        #print (len(array2))
         while (i < len(array1)) and (i < len(array2)):
-	    if not (array1[i] == 0):
-               # print array1[i]
-               # print array2[i]
-               # print threshold
-                distance_var = (float(array2[i]) / float(array1[i]))
-               # print distance_var
-                if not (distance_var >= 0.8 and distance_var <= 1.5):
+            if not (array1[i] == 0):
+                distance_var = abs(float(array2[i]) / float(array1[i]))
+                if not (distance_var >= 0.7 and distance_var <= 1.5):
                     if (threshold == 0):
                         return False
-	            threshold -= 1
+                    threshold -= 1
             i += 1
-        del_temp_files(filepath1, filepath2)
         return True
     else:
-        del_temp_files(filepath1, filepath2)
         return False
