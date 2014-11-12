@@ -49,3 +49,45 @@ licensing: Attribution-Noncommercial-Share Alike 3.0 US License
 http://freemusicarchive.org/music/Baron_Knoxburry/Ready_4_Battle_Run_Santyx_Error/16_Baron_Knoxburry_-_bad_guy_in_yer_bar
 
 ================
+=======
+CS4500 Fall 2014 Assignment 4
+-----------------------------------------------------------------------
+TEAM MEMBERS:
+
+Luis Enrique Lopez Archetti lopez-archetti.l@husky.neu.edu
+Saumil Patel patel.sau@husky.neu.edu
+Marc Savino marcs@ccs.neu.edu
+Kyle Vinagro vinagro.k@husky.neu.edu
+-----------------------------------------------------------------------
+TO COMPILE & EXECUTE:
+
+1. CD into the root directory of our project(cs4500_a4/) that holds 
+   this application's executable file(dan).
+
+2. Execute one of the following commands:
+
+    $ ./dan -f <path> -f <path>
+    $ ./dan -f <path> -d <path>
+    $ ./dan -d <path> -f <path>
+    $ ./dan -d <path> -d <path>
+    
+    <path> is a linux path name for a file or directory within the CCIS 
+    shared network.
+
+    If "-f" precedes a <path>, then the <path> must be a resource file 
+    that is in WAVE format. 
+
+    If "-d" precedes a <path>, then the <path> must file directory path 
+    which leads to a base resource file that is in WAVE format.
+
+3. In case of permissions issues, run the following command and return 
+   step 2:
+
+    $ chmod a+x dan 
+
+------------------------------------------------------------------------
+SOFTWARE AND MODULES USED:
+
+Python-Magic and libmagic
+Python Wave module
+------------------------------------------------------------------------
