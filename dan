@@ -34,7 +34,7 @@ def process_files(file_path1, file_path2):
         do not match.
     """
     file_name1 = util.get_file_name(file_path1)
-    file_name2 = util.get_file_name(file_path2)
+    file_name2 = util.get_file_name(file_path2)  
     if (util.is_supported_file(file_path1) 
     and util.is_supported_file(file_path2)):
         files_matched = util.compare(file_path1, file_path2)

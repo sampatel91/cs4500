@@ -90,6 +90,7 @@ def mp3_to_wav(filepath):
     subprocess.call(cmd, shell=True)
     return f[1]
 
+
 def get_length(filepath):
     """
     Arguments: filepath
@@ -152,6 +153,12 @@ def del_temp_files():
     files = glob.glob('*.wav')
     for filename in files:
         os.remove(filename)
+
+#define normalize array function here
+
+#define get FFT and powers function here
+
+#define Euclidian distance function here
     
 def compare(filepath1, filepath2):
     """
@@ -160,6 +167,20 @@ def compare(filepath1, filepath2):
     Compares two WAVE files found at the base of a file path 
     
     Returns TRUE if the two files MATCH. Otherwise returns FALSE.
+    """
+    """
+    -define cache
+    -define new framerate
+    -call function to normalize the int array of the song
+    -call function to get fft and powers
+    -store fft and powers in cache
+    -call function to compare Euclidian distances
+
+    REMOVE:
+    -get rid of comparing arrays
+
+    OPTIONS:
+    -normalize volume
     """
     if is_mp3(filepath1):
         filepath1 = mp3_to_wav(filepath1)
@@ -170,6 +191,20 @@ def compare(filepath1, filepath2):
         array1 = string_to_array(data1, get_channel(filepath1))
         data2 = read_file(filepath2)
         array2 = string_to_array(data2, get_channel(filepath2))
+
+    cache{}
+    if filepath1 in cache:
+        tuple1 = cache[filepath1]
+        if filepath2 in cache:
+            tuple2 = cache[filepath2]
+        else
+            norm_array2 = scipy.signal.resample(array2, 44100)
+            tuple1 = get_FFT_Powers(norm_array2)
+    else
+        norm_array2 = scipy.signal.resample(array2, 44100)
+        tuple1 = get_FFT_Powers(norm_array2)
+ 
+    """
         i = 0
         threshold = len(array1) * .3        
         while (i < len(array1)) and (i < len(array2)):
@@ -181,5 +216,6 @@ def compare(filepath1, filepath2):
                     threshold -= 1
             i += 1
         return True
+    """
     else:
         return False
