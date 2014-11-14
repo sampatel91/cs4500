@@ -22,7 +22,8 @@ def check_args(args):
     
     Validates the command line arguments.
     
-    Returns an error message to STDERR if the command line arguments are invalid and exits the application.
+    Returns an error message to STDERR if the command line arguments 
+    are invalid and exits the application.
     """
     if len(args) != 5:
         sys.stderr.write('ERROR: incorrect command line\n\n')
@@ -38,7 +39,8 @@ def get_file_name(filepath):
     """
     Arguments: filepath
     
-    Returns the resource file name found at the end of the given file path
+    Returns the resource file name found at the end of the given file 
+    path
     """
     file_name = filepath.split('/')
     if len(file_name) == 0:
@@ -372,10 +374,16 @@ def comp_distance(sig1, sig2, type):
     sigLen2 = len(sig2)
     #print distances
     if sigLen1 > sigLen2:
-        prop = float(len(distances))/float(sigLen2)
+        if type == 'mfcc':
+            prop = float(len(distances))/float(sigLen2)
+        else:
+            prop = (float(len(distances))/float(sigLen2)) * 10
     else:
-        prop = float(len(distances))/float(sigLen1)
-    print prop
+        if type == 'mfcc':
+            prop = float(len(distances))/float(sigLen1)
+        else:
+            prop = (float(len(distances))/float(sigLen1)) * 10
+    print "Prop: %.5f" % prop
     if prop > 0.1:
         #print ("distance matched")
         return 1
@@ -467,7 +475,7 @@ def compare(filepath1, filepath2):
     if filepath1 in cache:
         fft1, powSpec1 = cache[filepath1]
     else:
-        frate1 = get_frame_rate(filepath1) * 0.03
+        frate1 = get_frame_rate(filepath1) * 0.035
         window = numpy.hamming(frate1)
         #print ("applied hamming for file1")
         norm_array1 = frame_sig(array1, frate1)
@@ -478,7 +486,7 @@ def compare(filepath1, filepath2):
     if filepath2 in cache:
         fft2, powSpec2 =  cache[filepath2]
     else:
-        frate2 = get_frame_rate(filepath2) * 0.03
+        frate2 = get_frame_rate(filepath2) * 0.035
         window = numpy.hamming(frate2)
         #print ("applied hamming for file2")
         norm_array2 = frame_sig(array2, frate2)
