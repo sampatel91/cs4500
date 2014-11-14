@@ -10,6 +10,11 @@ import subprocess
 import glob
 import numpy
 import scipy.signal
+import audioop
+import math
+
+
+LAME = os.path.normpath('/course/cs4500f14/bin/lame')
 
 def check_args(args):
     """
@@ -208,7 +213,7 @@ def get_FFT_Powers(sig):
 
 # define filterbank
 def compute_filterbank(numfilter, fft_size, sample):
-
+    
     highest_freq = sample / 2
 
     lowest_freq = 0
@@ -229,17 +234,47 @@ def compute_filterbank(numfilter, fft_size, sample):
         for y in xrange(int(bin_fft[x + 1]), int(bin_fft[x + 2])):
             filter_bank[x, y] = (bin_fft[x + 2] - y) / (bin_fft[x + 2] - bin_fft[x + 1])
     return filter_bank
+    """
+    numBands = int(numCoefficients)
+    maxMel = int(freqToMel(maxHz))
+    minMel = int(freqToMel(minHz))
 
+    # Create a matrix for triangular filters, one row per filter
+    filterMatrix = numpy.zeros((numBands, blockSize))
+
+    melRange = numpy.array(xrange(numBands + 2))
+
+    melCenterFilters = melRange * (maxMel - minMel) / (numBands + 1) + minMel
+
+    # each array index represent the center of each triangular filter
+    aux = numpy.log(1 + 1000.0 / 700.0) / 1000.0
+    aux = (numpy.exp(melCenterFilters * aux) - 1) / 22050
+    aux = 0.5 + 700 * blockSize * aux
+    aux = numpy.floor(aux)  # Arredonda pra baixo
+    centerIndex = numpy.array(aux, int)  # Get int values
+
+    for i in xrange(numBands):
+        start, centre, end = centerIndex[i:i + 3]
+        k1 = numpy.float32(centre - start)
+        k2 = numpy.float32(end - centre)
+        up = (numpy.array(xrange(start, centre)) - start) / k1
+        down = (end - numpy.array(xrange(centre, end))) / k2
+
+        filterMatrix[i][start:centre] = up
+        filterMatrix[i][centre:end] = down
+
+    return filterMatrix.transpose()
+    """
 # define freq_2_mel_conversion
 def freq_2_mel_conversion(freq):
-    mel_convert = numpy.log10(1 + freq / 700) * 2596
+    mel_convert = numpy.log(1 + freq / 700) * 1127.01048
 
     return mel_convert
 
 # define mel_2_freq_conversion
 def mel_2_freq_conversion(mel):
-    freq_convert = (10 ** (mel / 2595 - 1)) * 700
-
+    freq_convert = (10 ** (mel / 1127.01048 - 1)) * 700
+    #freq_convert = (math.exp(mel / 1127.01048 -1)) * 700 
     return freq_convert
 
 # define mel filter bank
@@ -307,10 +342,31 @@ def compare_euclid(sig1, sig2, type):
 
     return result
 
+#define normalize wave file
+def norm_wave(filepath):
+    f, fpath = tempfile.mkstemp(dir='/tmp', suffix='.wav')
+#    command = [LAME, '--decode', '--silent', '--resample', '-m', 'm', '-b',
+#    '16', filepath, fpath]
+    cmd = '%s --decode --quiet --resample 16 -m m -b 16 %s %s' % (LAME, filepath, fpath)
+    subprocess.call(cmd, shell=True)
+    f = wave.open(fpath)
+    nframes = f.getnframes()
+    nchannels = f.getnchannels()
+    frames = f.readframes(nframes)
+    f.close()
+    
+    f2, f2path = tempfile.mkstemp(dir='/tmp', suffix='.wav')
+    f_norm = wave.open(f2path, 'wb')
+    f_norm.setparams((1,2, 16000, nframes, 'NONE', 'NONE'))
+    if nchannels != 1:
+        frames = audioop.tomono(frames, 2, 1, 1)
+    f_norm.writeframes(frames)
+    f_norm.close()
+    return f2path
 
 #define compare distance function
 def comp_distance(sig1, sig2, type):
-    print("inside of comp_distance")
+    #print("inside of comp_distance")
     distances = compare_euclid(sig1, sig2, type)
     sigLen1 = len(sig1)
     sigLen2 = len(sig2)
@@ -321,7 +377,7 @@ def comp_distance(sig1, sig2, type):
         prop = float(len(distances))/float(sigLen1)
     print prop
     if prop > 0.1:
-        print ("distance matched")
+        #print ("distance matched")
         return 1
 
 #    print prop
@@ -378,16 +434,32 @@ def compare(filepath1, filepath2):
 
     OPTIONS:
     -normalize volume
-    """
+    
     if is_mp3(filepath1):
         filepath1 = mp3_to_wav(filepath1)
     if is_mp3(filepath2):
         filepath2 = mp3_to_wav(filepath2)
 #    if get_length(filepath1) == get_length(filepath2):
+    """
+    filepath1 = norm_wave(filepath1)
+    filepath2 = norm_wave(filepath2)
     data1 = read_file(filepath1)
-    array1 = string_to_array(data1, get_channel(filepath1))
+#    array1 = string_to_array(data1, get_channel(filepath1))
+    array1 = array('h', data1)
     data2 = read_file(filepath2)
-    array2 = string_to_array(data2, get_channel(filepath2))
+#    array2 = string_to_array(data2, get_channel(filepath2))
+    array2 = array('h', data2)
+    """
+    complexSpectrum = numpy.fft(data1)
+    powerSpectrum = abs(complexSpectrum) ** 2
+    filteredSpectrum = numpy.dot(powerSpectrum, apply_filterbank())
+    logSpectrum = numpy.log(filteredSpectrum)
+    dctSpectrum = dct(logSpectrum, type=2)  # MFCC :)
+    """
+
+
+
+
 
     cache = {}
 #    fft1, fft2, powSpec1, powSpec2 = [] 
@@ -397,7 +469,7 @@ def compare(filepath1, filepath2):
     else:
         frate1 = get_frame_rate(filepath1) * 0.03
         window = numpy.hamming(frate1)
-        print ("applied hamming for file1")
+        #print ("applied hamming for file1")
         norm_array1 = frame_sig(array1, frate1)
         hamWindow = apply_hamming(norm_array1, window)
         fft1, powSpec1 = get_FFT_Powers(hamWindow)
@@ -408,7 +480,7 @@ def compare(filepath1, filepath2):
     else:
         frate2 = get_frame_rate(filepath2) * 0.03
         window = numpy.hamming(frate2)
-        print ("applied hamming for file2")
+        #print ("applied hamming for file2")
         norm_array2 = frame_sig(array2, frate2)
         hamWindow = apply_hamming(norm_array2, window)
         fft2, powSpec2 = get_FFT_Powers(hamWindow)
@@ -418,8 +490,8 @@ def compare(filepath1, filepath2):
         return False
 
     # Apply our filter
-    print ("in compare")
-    print frate1
+    #print ("in compare")
+    #print frate1
     mel_filterbank1 = compute_filterbank(20, len(powSpec1[0]), frate1)  
     filtered_spec_1 = apply_filterbank(powSpec1, mel_filterbank1)
 
@@ -434,15 +506,15 @@ def compare(filepath1, filepath2):
     cache[filepath2] = [fft2, powSpec2]    
 
     diff = 0
-    print(len(fft1))
-    print(len(fft2))
+    #print(len(fft1))
+    #print(len(fft2))
     if len(fft2) > len(fft1):
-        print("fft2 is bigger")
+        #print("fft2 is bigger")
         diff = comp_distance(mfcc1, mfcc2, 'mfcc')
     else:
-        print("fft1 is bigger")
+        #print("fft1 is bigger")
         diff = comp_distance(mfcc2, mfcc1, 'mfcc')
-    print diff
+    #print diff
     if diff == 1:
         if len(fft2) > len(fft1):
             print("mfcc matched")
