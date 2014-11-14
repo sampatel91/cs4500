@@ -447,8 +447,8 @@ def compare(filepath1, filepath2):
         if len(fft2) > len(fft1):
             print("mfcc matched")
             return comp_distance(fft1, fft2, 'fft') == 1
-#        else:
-#            return comp_distance(fft2, fft1, 'fft') == 1
+        else:
+            return comp_distance(fft2, fft1, 'fft') == 1
     else:
         print("mfcc not matched")
         return False
