@@ -19,7 +19,7 @@ def processFiles(file1, file2):
 
 def main(argv):
     util.checkArgs(argv)
-    if argv[1] == '-f' and argv[3] == '-f':
+Q    if argv[1] == '-f' and argv[3] == '-f':
         processFiles(argv[1], argv[3])
     elif argv[1] == '-f' and argv[3] == '-d':
         files = os.listdir(argv[3])

@@ -1,5 +1,7 @@
 import sys
 import wave
+import sys
+import wave
 import magic
 from array import array
 import tempfile
@@ -13,51 +15,113 @@ import audioop
 import math
 import constants
 from operator import itemgetter
+import scipy.signal
+import audioop
+import math
 
 
-def checkArgs(args):
+LAME = os.path.normpath('/course/cs4500f14/bin/lame')
+
+def check_args(args):
+    """
+    Arguments: Array of command line arguments
+    
+    Validates the command line arguments.
+    
+    Returns an error message to STDERR if the command line arguments 
+    are invalid and exits the application.
+    """
     if len(args) != 5:
-        sys.stderr.write('ERROR: Proper command line usage is one of:\n')
-        sys.stderr.write(' ./dan -f <pathname> -f <pathname>\n')
-        sys.stderr.write(' ./dan -f <pathname> -d <pathname>\n')
-        sys.stderr.write(' ./dan -d <pathname> -f <pathname>\n')
-        sys.stderr.write(' ./dan -d <pathname> -d <pathname>\n')
+        sys.stderr.write('ERROR: incorrect command line\n\n')
         sys.exit(-1)
     else:
         if not ((args[1] == '-f' or args[1] == '-d') and
                     (args[3] == '-f' or args[3] == '-d')):
-            sys.stderr.write('ERROR: Proper command line usage is one of:\n')
-            sys.stderr.write(' ./dan -f <pathname> -f <pathname>\n')
-            sys.stderr.write(' ./dan -f <pathname> -d <pathname>\n')
-            sys.stderr.write(' ./dan -d <pathname> -f <pathname>\n')
-            sys.stderr.write(' ./dan -d <pathname> -d <pathname>\n')
+            sys.stderr.write('ERROR: incorrect command line\n\n')
             sys.exit(-1)
 
 
-def getFileName(file):
-    fileName = file.split('/')
-    if len(fileName) == 0:
-        return fileName
+def get_file_name(filepath):
+    """
+    Arguments: filepath
+    
+    Returns the resource file name found at the end of the given file 
+    path
+    """
+    file_name = filepath.split('/')
+    if len(file_name) == 0:
+        return file_name
     else:
-        return fileName[len(fileName) - 1]
+        return file_name[len(file_name) - 1]
 
+def get_file_path(file, dir):
+    file_path = dir + '/' + file
+    return file_path
 
-def is_wave_file(filename):
-    mime = magic.open(magic.MIME_TYPE)
-    mime.load()
-    if mime.file(filename) == ('audio/x-wav'):
+def is_supported_file(filepath):
+    """
+    Arguments: filepath
+    
+    Checks if a file is in WAVE or MPEG format.
+    
+    Returns TRUE if the given file IS a wave or mpeg file. Otherwise returns FALSE.
+    """
+    real_path = os.path.realpath(filepath)
+    header = subprocess.check_output(['file', '-b',real_path])
+    if 'MPEG ADTS, layer III' or 'WAVE audio' in header:
         return True
     else:
-        return False
+        sys.stderr.write('ERROR: %s is not a supported format\n' % (filepath))
+        sys.exit(1)
+    return False
+
+def is_mp3(filepath):
+    """
+    Arguements: filepath
+ 
+    Checks if a file is in MPEG format
+
+    Returns TRUE if given file is MPEG. Otherwise returns false
+    """
+    real_path = os.path.realpath(filepath)
+    header = subprocess.check_output(['file', '-b', real_path])
+    if 'MPEG ADTS, layer III' in header:
+        return True
+    elif 'ID3' in header:
+      audio = MP3(path)
+      return 'audio/mp3' in audio.mime
+    return False
+
+def mp3_to_wav(filepath):
+    """
+    Arguements: filepath
+
+    Converts mp3 to wav
+
+    Returns the filepath of the converted file
+    """
+    f = tempfile.mkstemp(suffix='.wav')
+    cmd = '/course/cs4500f14/bin/lame --decode --silent %s %s' % (filepath, f[1])
+    subprocess.call(cmd, shell=True)
+    return f[1]
 
 
-def get_length(file):
-    file = wave.open(file, 'r')
+def get_length(filepath):
+    """
+    Arguments: filepath
+    
+    Returns the length of a WAVE file. 
+    """
+    file = wave.open(filepath, 'r')
     frames = file.getnframes()
     frate = file.getframerate()
     duration = frames / frate
     return duration
 
+def get_frame_rate(filepath):
+    file = wave.open(filepath, 'r')
+    frate = file.getframerate()
+    return frate
 
 def read_file(filepath):
     """ 
@@ -72,27 +136,59 @@ def read_file(filepath):
     return data
 
 
-def get_channel(file):
-    file = wave.open(file, 'r')
+def get_channel(filepath):
+    """
+    Argument: filepath
+
+    Returns 1 for mono and 2 for stereo channels.
+    """
+    file = wave.open(filepath, 'r')
     return file.getnchannels()
 
 
 def string_to_array(string, channel):
+    """
+    Arguments: string x channel
+    
+    Returns an array of WAVE file channels.
+    """
     raw_data = array('h', string)
+    data = []    
     if channel == 2:
         left = raw_data[0::2]
         right = raw_data[1::2]
         for i in range(0, len(left)):
-            data = [(left[i] + right[i]) / 2]
+             data.append((left[i] + right[i]) / 2)
     else:
         data = raw_data
     return data
-"""
-def compare(file1, file2):
-    data1 = read_file(file1)
-    array1 = string_to_array(data1, get_channel(file1))
-    data2 = read_file(file2)
-    array2 = string_to_array(data2, get_channel(file2))
+
+def del_temp_files():
+    """
+     Arguements: None
+
+    Deletes all temp files created by program
+    """
+    os.chdir('/tmp')
+    files = glob.glob('*.wav')
+    for filename in files:
+        os.remove(filename)
+
+#define apply hamming window
+def apply_hamming(signal, window):
+    result = []
+    winLen = len(window)
+    for sample in signal:
+        samLen = len(sample)
+        if samLen < winLen:
+            sample = list(sample)
+            sample[samLen:winLen] = [0] * (winLen - samLen)
+            sample = tuple(sample)
+        result.append(sample * window)
+    return result
+
+#define normalize array function here
+def frame_sig(signal, samples_perframe):
     i = 0
     overlap = samples_perframe * 0.25
     framed_signal = []
@@ -101,8 +197,7 @@ def compare(file1, file2):
         framed_signal.append(signal[i:int(i + samples_perframe)])
         i = int(i + samples_perframe - overlap)
     return framed_signal
-"""   
-     
+        
 #define get FFT and powers function here
 def get_FFT_Powers(sig):
 
@@ -279,7 +374,7 @@ def norm_wave(filepath):
     f_norm.writeframes(frames)
     f_norm.close()
     """
-    return fpath
+    return f2path
 
 #define compare distance function
 def comp_distance(sig1, sig2, type):
