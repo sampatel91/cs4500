@@ -10,7 +10,7 @@ def get_fft(signal):
     of the given audio signal.  
     """
     ffts =[]
-    fft = numpy.fft.rfft(signal)
+    fft = numpy.fft.fft(signal)
     for sample in fft:
         x = abs(sample)
         ffts.append(x)
