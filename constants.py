@@ -6,7 +6,7 @@ import os
 LAME = os.path.normpath('/course/cs4500f14/bin/lame')
 
 #Threshold for fingerprint matches
-THRESHOLD = 50
+THRESHOLD = 27
 
 #The length of a segment
 SEGMENT = 50

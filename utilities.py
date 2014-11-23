@@ -101,7 +101,7 @@ def mp3_to_wav(filepath):
     Returns the filepath of the converted file
     """
     f = tempfile.mkstemp(suffix='.wav')
-    cmd = '/course/cs4500f14/bin/lame --decode --silent %s %s' % (filepath, f[1])
+    cmd = '/course/cs4500f14/bin/lame --decode --mp3input --silent %s %s' % (filepath, f[1])
     subprocess.call(cmd, shell=True)
     return f[1]
 
@@ -354,17 +354,18 @@ def compare_euclid(sig1, sig2, type):
 #define normalize wave file
 def norm_wave(filepath):
     f, fpath = tempfile.mkstemp(dir='/tmp', suffix='.wav')
-    command = [LAME, '--decode', '--silent', '--resample', '-m', 'm', '-b',
-    '16', filepath, fpath]
-#    cmd = '%s --decode --quiet --resample 16 -m m -b 16 %s %s' % (LAME, filepath, fpath)
-#    subprocess.call(cmd, shell=True)
+#    command = [LAME, '--decode', '--silent', '--resample', '-m', 'm', '-b',
+#    '16', filepath, fpath]
+    cmd = '%s --quiet --resample 16 -m m -b 16 %s %s' % (LAME, filepath, fpath)
+    subprocess.call(cmd, shell=True)
 #    print cmd
+    """
     try:
         subprocess.check_call(command)
     except:
         sys.stderr.write('ERROR')
         sys.exit(-1)
-
+    """
     """ 
     f2, f2path = tempfile.mkstemp(dir='/tmp', suffix='.wav')
     f_norm = wave.open(f2path, 'wb')
@@ -374,7 +375,7 @@ def norm_wave(filepath):
     f_norm.writeframes(frames)
     f_norm.close()
     """
-    return f2path
+    return fpath
 
 #define compare distance function
 def comp_distance(sig1, sig2, type):
@@ -442,21 +443,25 @@ def get_peak(ffts):
 
 def get_fprint(data, frate, nframes):
     result = []
-    chunk_size = int(frate * .1)
+    weight = 20
+    chunk_size = frate/ 10
     for i in range(0, nframes, chunk_size):
         chunk_data = data[i:i+chunk_size]
         ffts = get_fft(chunk_data)
-        peak_val = get_peak(ffts) * (frate / len(chunk_data)) 
+        peak_val = get_peak(ffts) * frate / len(chunk_data)
+        print peak_val
+        weight -= 1
         result.append(peak_val)
     return result
 
 def compare_segs(seg1, seg2):
     segs_matched = 0
     if (not len(seg1) == len(seg2)):
+        print "lenghts of segs diff"
         return 0
     for i in range(len(seg1)):
         if seg1[i] == seg2[i]:
-            segs_matched += 1
+            segs_matched = segs_matched + 1
 #    for i in seg1:
 #        for j in seg2:
             #print '%s == %s' % (i, j)
@@ -472,6 +477,7 @@ def compare_fprints(fprint1, fprint2):
             seg1 = fprint1[i:i+constants.SEGMENT-1]
             seg2 = fprint2[j:j+constants.SEGMENT-1]
             nSegs_matched = compare_segs(seg1, seg2)
+            #print nSegs_matched
             if nSegs_matched > constants.THRESHOLD:
                 return True
     return False
@@ -498,14 +504,21 @@ def compare(filepath1, filepath2):
     OPTIONS:
     -normalize volume
     
+#    if get_length(filepath1) == get_length(filepath2):
+    """
+    print filepath1
+    print filepath2
+    filepath1 = norm_wave(filepath1)
+    filepath2 = norm_wave(filepath2)
+    #print filepath1
+    #print filepath2    
     if is_mp3(filepath1):
         filepath1 = mp3_to_wav(filepath1)
     if is_mp3(filepath2):
         filepath2 = mp3_to_wav(filepath2)
-#    if get_length(filepath1) == get_length(filepath2):
-    """
-    filepath1 = norm_wave(filepath1)
-    filepath2 = norm_wave(filepath2)
+    #print filepath1
+    #print filepath2
+
     data1 = read_file(filepath1)
 #    array1 = string_to_array(data1, get_channel(filepath1))
 #    array1 = array('h', data1)
@@ -514,14 +527,6 @@ def compare(filepath1, filepath2):
 #    array2 = array('h', data2)
 
     
-    """
-    complexSpectrum = numpy.fft(data1)
-    powerSpectrum = abs(complexSpectrum) ** 2
-    filteredSpectrum = numpy.dot(powerSpectrum, apply_filterbank())
-    logSpectrum = numpy.log(filteredSpectrum)
-    dctSpectrum = dct(logSpectrum, type=2)  # MFCC :)
-    """
-
     cache = {}
 #    fft1, fft2, powSpec1, powSpec2 = [] 
 #    frate1, frate2 = 0
@@ -536,6 +541,7 @@ def compare(filepath1, filepath2):
         f1 = wave.open(filepath1, 'r')
         frate1 = f1.getframerate()
         nframes1 = f1.getnframes()
+        f1.close()
         fprint1 = get_fprint(data1, frate1, nframes1)
         cache[filepath1] = [fprint1]
 
@@ -550,6 +556,7 @@ def compare(filepath1, filepath2):
         f2 = wave.open(filepath2, 'r')
         frate2 = f2.getframerate()
         nframes2 = f2.getnframes()
+        f2.close()
         fprint2 = get_fprint(data2, frate2, nframes2)
         cache[filepath2] = [fprint2]
 
