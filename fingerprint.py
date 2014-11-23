@@ -1,9 +1,14 @@
 import numpy
 from operator import itemgetter
 import wave
-import scipy.io.wavfile
 
 def get_fft(signal):
+    """
+    Arguments: audio signal
+
+    Applies, computes, and returns the Fast Fourier Transform
+    of the given audio signal.  
+    """
     ffts =[]
     fft = numpy.fft.rfft(signal)
     for sample in fft:
@@ -12,19 +17,26 @@ def get_fft(signal):
     return ffts
 
 def get_peak(ffts):
+    """
+    Arguments: the spectral data returned by the FFT Algorithm.
+
+    Returns the highest spectral value found in the FFT data.
+    """
     return max(enumerate(ffts), key=itemgetter(1))[0]
 
-def get_fprint(data, frate, nframes):
+def get_fprint(data, frate, nframes, chunk_size):
+    """
+    Arguments: array of integers x frame rate x number of frames x size of
+    chunk.
+
+    Returns the fingerprint result that contains the peak values of an audio
+    file.
+    """
     result = []
-    #weight = 20
-    chunk_size = frate/ 10
     for i in range(0, nframes, chunk_size):
         chunk_data = data[i:i+chunk_size]
         ffts = get_fft(chunk_data)
-        #peak_val = get_peak(ffts) * frate / len(chunk_data) 
-	#weight = frate/chunk_size
         peak_val = get_peak(ffts)
-        #weight -= 1
         result.append(peak_val)
     return result
 

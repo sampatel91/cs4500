@@ -11,23 +11,31 @@ import fingerprint as fp
 import constants as const
 import normalize as norm
 
-
+# cache : stores processed files for future reference
 cache = {}
 
-# Returns the short name of the file
-def get_file_name(path):
-    return os.path.basename(os.path.normpath(path))
+def get_file_name(filepath):
+    """
+    Arguments: filepath
 
+    Returns the file name found at the base of the given filepath.
+    """
+    return os.path.basename(os.path.normpath(filepath))
 
 def get_file_path(file, dir):
+    """
+    Arguments: file name x directory
+
+    Returns a filepath.
+    """
     file_path = dir + '/' + file
     return file_path
 
 def del_temp_files():
     """
-     Arguements: None
+    Arguments: None
 
-    Deletes all temp files created by program
+    Deletes all temp files created by the application. 
     """
     os.chdir('/tmp')
     files = glob.glob('*.wav')
@@ -57,9 +65,10 @@ def is_supported_file(filepath):
     """
     Arguments: filepath
     
-    Checks if a file is in WAVE or MPEG format.
+    Checks if a file is in WAVE or MP3 format.
     
-    Returns TRUE if the given file IS a wave or mpeg file. Otherwise returns FALSE.
+    Returns TRUE if the given file is in the correct audio format.
+    Otherwise returns FALSE.
     """
     real_path = os.path.realpath(filepath)
     header = subprocess.check_output(['file', '-b',real_path])
@@ -71,22 +80,46 @@ def is_supported_file(filepath):
     return False
 
 def get_frate(filepath):
+    """
+    Arguments: filepath
+    
+    Computes and returns the frame rate of the audio file found at the base of
+    the given filepath.
+    """
     f = wave.open(filepath, 'r')
     frate = f.getframerate()
     return frate
 
 def read_file(filepath):
+    """
+    Arguments: filepath
+
+    Reads and returns the data of the audio file found at the base of the 
+    given filepath.
+    """
     f = wave.open(filepath, 'r')
     nframes = f.getnframes()
     data = f.readframes(nframes)
     return data
 
 def get_nframes(filepath):
+    """
+    Arguments: filepath
+
+    Computes and returns the number of frames of the audiofile found at the
+    base of the given filepath.
+    """
     f = wave.open(filepath, 'r')
     nframes = f.getnframes()
     return nframes
 
 def compare_segs(seg1, seg2):
+    """
+    Arguments: Segment Array x Segment Array
+
+    Compares the divided segments of audio files and returns the total number 
+    of matching segments.
+    """
     segs_matched = 0
     if(len(seg1) == len(seg2)):
         for i in range(len(seg1)):
@@ -96,6 +129,12 @@ def compare_segs(seg1, seg2):
 
 
 def compare_fprints(fprint1, fprint2):
+    """
+    Arguments: fingerprint array X fingerprint array
+
+    Compares two audio file fingerprints and returns TRUE if the two have
+    the required number of matching segments. Otherwise, FALSE.
+    """
     seg_len1 = len(fprint1) - const.SEGMENT
     seg_len2 = len(fprint2) - const.SEGMENT
     for i in range(seg_len1):
@@ -103,17 +142,22 @@ def compare_fprints(fprint1, fprint2):
             seg1 = fprint1[i:i+const.SEGMENT-1]
             seg2 = fprint2[j:j+const.SEGMENT-1]
             nSegs_matched = compare_segs(seg1, seg2)
-            #print nSegs_matched
             if nSegs_matched > const.THRESHOLD:
                 return True
     return False
 
-# Compares two files
 def compare(path1, path2):
+    """
+    Arguments: filepath x filepath
 
-    fprint1 = []
+    Compares two audio files and returns TRUE if the two are considered 
+    a match. Otherwise, FALSE.
+    """
+    fprint1 = [] 
     fprint2 = []
 
+    # Normalizes and computes needed data from path1 and stores it within 
+    # the cache.
     if path1 not in cache:
         f = norm.normalize_wav(path1)
 
@@ -125,13 +169,14 @@ def compare(path1, path2):
         data = array.array('h', string)
 
         
-        fprint1 = fp.get_fprint(data, frate, nframes)
-        #fprint1 = fp.get_fprint(data1, chunk_size, nframes, frate)
+        fprint1 = fp.get_fprint(data, frate, nframes, chunk_size)
 
         cache[path1] = fprint1
     else:
         fprint1 = cache[path1]
     
+    # Normalizes and computes needed data from path2 and stores it within
+    # the cache.
     if path2 not in cache:
         f = norm.normalize_wav(path2)
 
@@ -142,8 +187,7 @@ def compare(path1, path2):
         string = read_file(f)
         data = array.array('h', string)
 
-        fprint2 = fp.get_fprint(data, frate, nframes)
-        #fprint2 = fp.get_fprint(data1, chunk_size, nframes, frate)
+        fprint2 = fp.get_fprint(data, frate, nframes, chunk_size)
 
         cache[path2] = fprint2
     else:
