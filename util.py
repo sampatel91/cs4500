@@ -6,10 +6,11 @@ import array
 import os
 import subprocess
 import tempfile
-import glob
 import fingerprint as fp
 import constants as const
 import normalize as norm
+import shutil
+import scipy.io.wavfile
 
 # cache : stores processed files for future reference
 cache = {}
@@ -37,11 +38,7 @@ def del_temp_files():
 
     Deletes all temp files created by the application. 
     """
-    os.chdir('/tmp')
-    files = glob.glob('*.wav')
-    for filename in files:
-        os.remove(filename)
-
+    shutil.rmtree('/tmp/dan')
 
 def check_args(args):
     """
@@ -53,13 +50,27 @@ def check_args(args):
     are invalid and exits the application.
     """
     if len(args) != 5:
-        sys.stderr.write('ERROR: incorrect command line\n\n')
+        sys.stderr.write('ERROR: incorrect command line\n')
         sys.exit(-1)
     else:
         if not ((args[1] == '-f' or args[1] == '-d') and
                     (args[3] == '-f' or args[3] == '-d')):
-            sys.stderr.write('ERROR: incorrect command line\n\n')
+            sys.stderr.write('ERROR: incorrect command line\n')
             sys.exit(-1)
+
+def get_files(dir):
+    """
+    Arguments: file directory containing audio files
+
+    Returns a list of the files within the given file directory.
+    """
+    files = []
+    try:
+        files = os.listdir(dir)
+    except:
+        sys.stderr.write('ERROR: invalid directory\n')
+        sys.exit(-1)
+    return files
 
 def is_supported_file(filepath):
     """
@@ -72,7 +83,7 @@ def is_supported_file(filepath):
     """
     real_path = os.path.realpath(filepath)
     header = subprocess.check_output(['file', '-b',real_path])
-    if 'MPEG ADTS, layer III' or 'WAVE audio' in header:
+    if 'MPEG ADTS, layer III' or 'WAVE audio' or 'Ogg' in header:
         return True
     else:
         sys.stderr.write('ERROR: %s is not a supported format\n' % (filepath))
@@ -123,8 +134,8 @@ def compare_segs(seg1, seg2):
     segs_matched = 0
     if(len(seg1) == len(seg2)):
         for i in range(len(seg1)):
-            if seg1[i] == seg2[i]:
-                segs_matched += 1
+           if seg1[i] == seg2[i]:
+               segs_matched += 1
     return segs_matched
 
 
@@ -142,11 +153,11 @@ def compare_fprints(fprint1, fprint2):
             seg1 = fprint1[i:i+const.SEGMENT-1]
             seg2 = fprint2[j:j+const.SEGMENT-1]
             nSegs_matched = compare_segs(seg1, seg2)
-            if nSegs_matched > const.THRESHOLD:
-                return True
-    return False
+            if nSegs_matched >= const.THRESHOLD:
+                return (i, j) 
+    return (0, 0)
 
-def compare(path1, path2):
+def compare(path1, path2, n_files):
     """
     Arguments: filepath x filepath
 
@@ -155,6 +166,9 @@ def compare(path1, path2):
     """
     fprint1 = [] 
     fprint2 = []
+
+    f_name1 = get_file_name(path1)
+    f_name2 = get_file_name(path2)
 
     # Normalizes and computes needed data from path1 and stores it within 
     # the cache.
@@ -167,7 +181,6 @@ def compare(path1, path2):
 
         string = read_file(f)
         data = array.array('h', string)
-
         
         fprint1 = fp.get_fprint(data, frate, nframes, chunk_size)
 
@@ -193,5 +206,12 @@ def compare(path1, path2):
     else:
         fprint2 = cache[path2]
 
-    return compare_fprints(fprint1, fprint2)
+    offset1, offset2 = compare_fprints(fprint1, fprint2)
 
+    if offset1 and offset2:
+        n_files -= 1
+        offset1 = offset1 * .1
+        offset2 = offset2 * .1
+        print "MATCH %s %s %s %s" % (f_name1, f_name2, offset1, offset2)
+    elif n_files == 1:
+        print "NO MATCH"

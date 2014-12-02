@@ -36,7 +36,7 @@ def get_fprint(data, frate, nframes, chunk_size):
     for i in range(0, nframes, chunk_size):
         chunk_data = data[i:i+chunk_size]
         ffts = get_fft(chunk_data)
-        peak_val = get_peak(ffts)
+        peak_val = get_peak(ffts) * frate / len(chunk_data)
         result.append(peak_val)
     return result
 

@@ -4,22 +4,8 @@ import util
 import os
 import constants
 
-# Keeps a tally of all the MATCHES found.
-match_counter = 0
 
-def match_found():
-    """
-    Arguments: None
-
-    Checks to see if any file match has been found.
-
-    This method prints:
-        'NO MATCH' if the condition is met.
-    """
-    if (match_counter == 0):
-        print "NO MATCH"
-
-def process_files(file_path1, file_path2):
+def process_files(file_path1, file_path2, n_files):
     """
     Arguments: filepath x filepath 
     
@@ -38,12 +24,7 @@ def process_files(file_path1, file_path2):
     file_name2 = util.get_file_name(file_path2)  
     if (util.is_supported_file(file_path1) 
     and util.is_supported_file(file_path2)):
-        files_matched = util.compare(file_path1, file_path2)
-        if files_matched:
-            global match_counter
-            match_counter = match_counter + 1
-            print "MATCH %s %s" %  (file_name1, file_name2) 
-            #FIX ME: add matching offsets
+        util.compare(file_path1, file_path2, n_files)
 
 def main(argv):
     """
@@ -59,32 +40,28 @@ def main(argv):
 
     # If the input contains two files:
     if argv[1] == '-f' and argv[3] == '-f':
-        process_files(argv[2], argv[4])
-        match_found()
+        process_files(argv[2], argv[4], 1)
     # If the input contains a file and a directory:
     elif argv[1] == '-f' and argv[3] == '-d':
-        files = os.listdir(argv[4])
+        files = util.get_files(argv[4])
         for file in files:
             file_path = util.get_file_path(file, argv[4])
-            process_files(argv[2], file_path)
-        match_found()
+            process_files(argv[2], file_path, len(files))
     # If the input contains a directory and a file:
     elif argv[1] == '-d' and argv[3] == '-f':
-        files = os.listdir(argv[2])
+        files = util.get_files(argv[2])
         for file in files:
             file_path = util.get_file_path(file, argv[2])
-            process_files(file_path, argv[4])
-        match_found()
+            process_files(file_path, argv[4], len(files))
     # If the input contains two directories:
     elif argv[1] == '-d' and argv[3] == '-d':
-        files1 = os.listdir(argv[2])
-        files2 = os.listdir(argv[4])
+        files1 = util.get_files(argv[2])
+        files2 = util.get_files(argv[4]) 
         for file1 in files1:
             for file2 in files2:
                 file_path1 = util.get_file_path(file1, argv[2])
                 file_path2 = util.get_file_path(file2, argv[4])
-                process_files(file_path1, file_path2)
-        match_found()
+                process_files(file_path1, file_path2, len(files1))
     util.del_temp_files()
 
 if __name__ == "__main__":
